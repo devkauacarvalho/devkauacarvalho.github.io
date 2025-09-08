@@ -1,21 +1,49 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-g">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bem-vindo!</title>
     <style>
-        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; }
-        .container { padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
-        .button { display: inline-block; padding: 15px 30px; font-size: 18px; color: white; background-color: #007bff; text-decoration: none; border-radius: 5px; }
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; background-color: #f0f2f5; margin: 0; }
+        .container { padding: 30px; border: 1px solid #ccc; border-radius: 8px; background-color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        p { color: #666; }
+        .button { display: inline-block; padding: 15px 30px; font-size: 18px; color: white; background-color: #007bff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s; }
+        .button:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Conectado com Sucesso!</h1>
-        <p>Clique no botão abaixo para ser redirecionado ao nosso site e iniciar a navegação.</p>
+        <p>Clique no botão abaixo para autorizar seu acesso e iniciar a navegação.</p>
         <br>
-        <a href="https://meucaptive.intelbras.com.br:2061/cp/advd_auth.cgi?continue=www.msftconnecttest.com%2Fredirect&auth_service=0&ip=10.0.0.1&mac=54:6C:AC:3B:7C:BD&ap_mac=98:2A:0A:59:BD:88&radio=wifi0&ssid=AP1350AC-S_bd88&ts=1756500586&redirect_uri=&user_hash=f1a81bb5dab5b1aad31461f23e70467e" class="button">Ir para o Site</a>
+        <a id="authButton" href="#" class="button">Liberar Internet</a>
     </div>
+
+    <script>
+        window.onload = function() {
+            const queryString = window.location.search;
+
+            const urlParams = new URLSearchParams(queryString);
+
+            const baseGrantUrl = urlParams.get('base_grant_url');
+            const userContinueUrl = urlParams.get('user_continue_url');
+            const apMac = urlParams.get('ap_mac');
+            const clientMac = urlParams.get('client_mac');
+
+            const authUrl = `${baseGrantUrl}?user_continue_url=${userContinueUrl}&ap_mac=${apMac}&client_mac=${clientMac}`;
+        
+            const authButton = document.getElementById('authButton');
+            
+            if (baseGrantUrl) {
+                authButton.href = authUrl;
+            } else {
+                authButton.textContent = "Erro: Abra via Wi-Fi";
+                authButton.style.backgroundColor = "grey";
+                console.error("Não foi possível encontrar os parâmetros de autenticação na URL.");
+            }
+        };
+    </script>
 </body>
 </html>
