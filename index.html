@@ -6,7 +6,7 @@
     <title>Bem-vindo!</title>
     <style>
         body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; text-align: center; background-color: #f0f2f5; margin: 0; }
-        .container { padding: 30px; border: 1px solid #ccc; border-radius: 8px; background-color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .container { padding: 30px; border: 1px solid #ccc; border-radius: 8px; background-color: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); max-width: 90%; }
         h1 { color: #333; }
         p { color: #666; }
         .button { display: inline-block; padding: 15px 30px; font-size: 18px; color: white; background-color: #007bff; text-decoration: none; border-radius: 5px; transition: background-color 0.3s; }
@@ -15,33 +15,48 @@
 </head>
 <body>
     <div class="container">
-        <h1>Conectado com Sucesso!</h1>
-        <p>Clique no botão abaixo para autorizar seu acesso e iniciar a navegação.</p>
+        <h1>Acesso à Internet</h1>
+        <p>Clique no botão abaixo para autorizar seu dispositivo e começar a navegar.</p>
         <br>
-        <a id="authButton" href="#" class="button">Liberar Internet</a>
+        <a id="authButton" href="#" class="button">Liberar Acesso</a>
     </div>
 
     <script>
         window.onload = function() {
+            // Pega a string completa de parâmetros da URL atual (tudo após o "?")
             const queryString = window.location.search;
-
+            
+            // Cria um objeto para facilitar a leitura dos parâmetros
             const urlParams = new URLSearchParams(queryString);
 
-            const baseGrantUrl = urlParams.get('base_grant_url');
-            const userContinueUrl = urlParams.get('user_continue_url');
-            const apMac = urlParams.get('ap_mac');
-            const clientMac = urlParams.get('client_mac');
+            // Tenta obter o link de autorização do parâmetro 'redirect_uri'
+            // Este é o parâmetro que o seu AP está enviando agora.
+            const authBaseUrl = urlParams.get('redirect_uri');
 
-            const authUrl = `${baseGrantUrl}?user_continue_url=${userContinueUrl}&ap_mac=${apMac}&client_mac=${clientMac}`;
-        
+            // Encontra o botão na página
             const authButton = document.getElementById('authButton');
-            
-            if (baseGrantUrl) {
-                authButton.href = authUrl;
+
+            // VERIFICAÇÃO: Se o parâmetro 'redirect_uri' foi encontrado na URL...
+            if (authBaseUrl) {
+                // Constrói a URL final de autorização.
+                // Ela será o link base (de 'redirect_uri') + TODOS os parâmetros originais.
+                // Isso garante que user_hash, ts, mac, etc., sejam todos enviados.
+                const finalAuthUrl = authBaseUrl + queryString;
+
+                // Para depuração: você pode ver o link final no console do navegador (F12)
+                console.log("URL de Autorização Construída:", finalAuthUrl);
+
+                // Define o link do botão com a URL final
+                authButton.href = finalAuthUrl;
+
             } else {
-                authButton.textContent = "Erro: Abra via Wi-Fi";
-                authButton.style.backgroundColor = "grey";
-                console.error("Não foi possível encontrar os parâmetros de autenticação na URL.");
+                // Se não encontrou o parâmetro, exibe um erro
+                authButton.textContent = "Erro de Autenticação";
+                authButton.style.backgroundColor = "red";
+                authButton.onclick = function(e) { e.preventDefault(); }; // Desativa o clique
+                
+                console.error("Parâmetro 'redirect_uri' não encontrado na URL. Não é possível autenticar.");
+                console.log("Parâmetros recebidos:", queryString);
             }
         };
     </script>
