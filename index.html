@@ -23,37 +23,40 @@
 
     <script>
         window.onload = function() {
-            // --- PASSO 1: Definir a URL base de autenticação do seu roteador ---
-            // Esta URL é FIXA e não muda. A pegamos do seu primeiro post.
-            // ATENÇÃO: Verifique no seu painel (INC Cloud) se este é realmente o endereço correto.
-            const AUTH_BASE_URL = "https://meucaptive.intelbras.com.br:2061/cp/advd_auth.cgi";
-
-            // --- PASSO 2: Pegar todos os parâmetros dinâmicos da URL atual ---
-            // Isso pega a string completa: "?continue=...&mac=...&user_hash=..."
+            // Pega a string completa de parâmetros da URL atual (tudo após o "?")
             const queryString = window.location.search;
+            
+            // Cria um objeto para facilitar a leitura dos parâmetros
+            const urlParams = new URLSearchParams(queryString);
+
+            // Tenta obter o link de autorização do parâmetro 'redirect_uri'
+            // Este é o parâmetro que o seu AP está enviando agora.
+            const authBaseUrl = urlParams.get('redirect_uri');
 
             // Encontra o botão na página
             const authButton = document.getElementById('authButton');
 
-            // --- PASSO 3: Juntar a URL base com os parâmetros e definir o link ---
-            // VERIFICAÇÃO: Só continua se existirem parâmetros na URL (se a string não for vazia)
-            if (queryString) {
-                // Junta a parte fixa com a parte dinâmica
-                const finalAuthUrl = AUTH_BASE_URL + queryString;
+            // VERIFICAÇÃO: Se o parâmetro 'redirect_uri' foi encontrado na URL...
+            if (authBaseUrl) {
+                // Constrói a URL final de autorização.
+                // Ela será o link base (de 'redirect_uri') + TODOS os parâmetros originais.
+                // Isso garante que user_hash, ts, mac, etc., sejam todos enviados.
+                const finalAuthUrl = authBaseUrl + queryString;
 
                 // Para depuração: você pode ver o link final no console do navegador (F12)
-                console.log("URL de Autorização Final:", finalAuthUrl);
+                console.log("URL de Autorização Construída:", finalAuthUrl);
 
-                // Define o link do botão com a URL final e correta
+                // Define o link do botão com a URL final
                 authButton.href = finalAuthUrl;
 
             } else {
-                // Se a página for aberta sem parâmetros, exibe um erro
+                // Se não encontrou o parâmetro, exibe um erro
                 authButton.textContent = "Erro de Autenticação";
                 authButton.style.backgroundColor = "red";
                 authButton.onclick = function(e) { e.preventDefault(); }; // Desativa o clique
                 
-                console.error("Nenhum parâmetro de autenticação encontrado na URL.");
+                console.error("Parâmetro 'redirect_uri' não encontrado na URL. Não é possível autenticar.");
+                console.log("Parâmetros recebidos:", queryString);
             }
         };
     </script>
